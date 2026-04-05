@@ -37,6 +37,36 @@ Open `http://localhost:4312`.
 npm run desktop
 ```
 
+## CLI
+
+```bash
+npm run cli -- topics list
+npm run cli -- topics read topic-welcome-to-kirevo
+npm run cli -- context get topic-welcome-to-kirevo
+npm run cli -- index rebuild
+```
+
+The CLI is JSON-first and intended for agent use from Codex or Claude Code.
+
+Available command groups:
+
+- `topics list|read|save|delete|create-from-link`
+- `context get`
+- `graph show`
+- `import preview|run`
+- `index rebuild`
+
+The current implementation depends on the system `sqlite3` CLI being available in `PATH`.
+
+Verified locally on 2026-04-06:
+
+- `npm test`
+- `node src/cli.mjs topics list`
+- `node src/cli.mjs topics read topic-welcome-to-kirevo`
+- `node src/cli.mjs context get topic-welcome-to-kirevo --depth 2 --max-topics 4`
+- `node src/cli.mjs graph show --query guide`
+- `node src/cli.mjs index rebuild`
+
 ## Package Desktop App
 
 ```bash

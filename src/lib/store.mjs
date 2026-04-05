@@ -15,6 +15,11 @@ import {
 } from "./topic-format.mjs";
 
 export async function initializeStore() {
+  await ensureStoreReady();
+  return rebuildIndex();
+}
+
+export async function ensureStoreReady() {
   await ensureAppDirs();
   await initializeDatabase();
   await ensureSampleTopic("welcome-to-kirevo.md", {
@@ -45,8 +50,6 @@ export async function initializeStore() {
     "## Link",
     "Use wiki links like [[welcome-to-kirevo]]."
   ]);
-
-  return rebuildIndex();
 }
 
 export async function getIndex() {
@@ -399,9 +402,10 @@ async function recomputeTopicScores() {
     score: computeTopicScoreSafe(topic)
   }));
   const reassigned = reassignLayers(scored);
+  const statements = ["BEGIN;"];
 
   for (const topic of reassigned) {
-    await runSql(`
+    statements.push(`
       UPDATE topics
       SET score = ${sqlNumber(topic.score)},
           layer = ${sqlNumber(topic.layer)},
@@ -413,6 +417,8 @@ async function recomputeTopicScores() {
       WHERE id = ${sqlString(topic.id)};
     `);
   }
+  statements.push("COMMIT;");
+  await runSql(statements.join("\n"));
 }
 
 function computeTopicScoreSafe(topic) {

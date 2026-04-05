@@ -4,9 +4,13 @@
   "private": true,
   "type": "module",
   "main": "electron/main.mjs",
+  "bin": {
+    "kirevo": "./src/cli.mjs"
+  },
   "scripts": {
     "start": "node src/server.mjs",
     "desktop": "electron .",
+    "cli": "node src/cli.mjs",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

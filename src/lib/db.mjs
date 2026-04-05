@@ -1,15 +1,34 @@
 import { execFile } from "node:child_process";
+import fs from "node:fs/promises";
 import { promisify } from "node:util";
 import { DB_PATH } from "./paths.mjs";
 
 const execFileAsync = promisify(execFile);
+let databaseReadyPromise;
 
 export async function initializeDatabase() {
-  await runSql(`
-    PRAGMA journal_mode = WAL;
-    PRAGMA foreign_keys = ON;
-    PRAGMA busy_timeout = 5000;
+  if (!databaseReadyPromise) {
+    databaseReadyPromise = initializeDatabaseOnce().catch((error) => {
+      databaseReadyPromise = null;
+      throw error;
+    });
+  }
+  await databaseReadyPromise;
+}
 
+async function initializeDatabaseOnce() {
+  let exists = true;
+  try {
+    await fs.access(DB_PATH);
+  } catch {
+    exists = false;
+  }
+
+  if (exists) {
+    return;
+  }
+
+  await runSql(`
     CREATE TABLE IF NOT EXISTS topics (
       id TEXT PRIMARY KEY,
       slug TEXT NOT NULL UNIQUE,
@@ -106,13 +125,19 @@ export async function initializeDatabase() {
 }
 
 export async function runSql(sql) {
-  await execFileAsync("sqlite3", [DB_PATH, sql], { maxBuffer: 20 * 1024 * 1024 });
+  await execFileAsync(
+    "sqlite3",
+    ["-cmd", ".timeout 5000", "-cmd", "PRAGMA foreign_keys = ON;", DB_PATH, sql],
+    { maxBuffer: 20 * 1024 * 1024 }
+  );
 }
 
 export async function queryJson(sql) {
-  const { stdout } = await execFileAsync("sqlite3", ["-json", DB_PATH, sql], {
-    maxBuffer: 20 * 1024 * 1024
-  });
+  const { stdout } = await execFileAsync(
+    "sqlite3",
+    ["-cmd", ".timeout 5000", "-cmd", "PRAGMA foreign_keys = ON;", "-json", DB_PATH, sql],
+    { maxBuffer: 20 * 1024 * 1024 }
+  );
   const trimmed = stdout.trim();
   return trimmed ? JSON.parse(trimmed) : [];
 }

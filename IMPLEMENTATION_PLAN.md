@@ -278,6 +278,60 @@ kirevo/
 - URL から web topic を取り込める
 - source metadata を保持できる
 
-## 11. 次にやるべきこと
+## 11. CLI 設計
+
+### 11.1 目的
+
+`kirevo` CLI は Claude Code / Codex などの agent が安定して叩けるローカル interface とする。人間向けの対話 UI ではなく、`stdin/stdout` と終了コードが明確な JSON-first CLI を優先する。
+
+### 11.2 設計方針
+
+- コマンド構造は `kirevo <resource> <action>`
+- デフォルト出力は JSON
+- 失敗時は `stderr` に短い説明、`stdout` には JSON error を返せるようにする
+- interactive prompt は持たない
+- 既存の `store/indexer/web-import` を直接呼び、HTTP API と二重実装しない
+
+### 11.3 初期コマンド
+
+- `kirevo topics list`
+- `kirevo topics read <topic-id-or-slug>`
+- `kirevo topics save --file <topic.md>`
+- `kirevo topics save --stdin`
+- `kirevo topics delete <topic-id-or-slug>`
+- `kirevo topics create-from-link --source <topic-id> --target <slug>`
+- `kirevo context get <topic-id-or-slug>`
+- `kirevo graph show`
+- `kirevo import preview <url>`
+- `kirevo import run <url>`
+- `kirevo index rebuild`
+
+### 11.4 出力契約
+
+- success: `{ "ok": true, ... }`
+- failure: `{ "ok": false, "error": { "code": "...", "message": "..." } }`
+- exit code
+  - `0`: success
+  - `2`: validation error
+  - `3`: not found
+  - `4`: conflict
+  - `5`: internal error
+
+### 11.5 agent 向け重要操作
+
+- `topics list`: 候補 topic の抽出
+- `topics read`: 単一 topic の安定取得
+- `context get`: 関連 topic を束ねた context bundle の取得
+- `import preview` / `import run`: Web knowledge ingestion
+- `index rebuild`: 外部編集後の明示同期
+
+### 11.6 実装メモ
+
+- `src/cli.mjs`: CLI entrypoint
+- `src/lib/cli-parser.mjs`: 引数解析
+- package `bin` で `kirevo` コマンドを公開
+- 保存系は Markdown raw input を優先し、frontmatter 付き `.md` をそのまま ingest できるようにする
+
+## 12. 次にやるべきこと
 
 次のターンでは Phase 0 と Phase 1 をまとめて着手し、まず topic CRUD が動く縦切りを作るのが適切です。ここが通れば、以降の indexer, graph, ingestion は積み上げで実装できます。
