@@ -9,27 +9,96 @@
   <body>
     <div class="app-shell">
       <aside class="sidebar">
-        <div class="sidebar-header">
+        <div class="sidebar-hero">
+          <div class="brand-mark">K</div>
           <div>
-            <p class="eyebrow">Kirevo</p>
-            <h1>Memory Workspace</h1>
+            <p class="eyebrow">Kirevo Workspace</p>
+            <h1>Memory Atlas</h1>
+            <p class="sidebar-copy">
+              Local knowledge, ranked by relevance and traced through links.
+            </p>
           </div>
-          <button id="new-topic-button" class="primary-button">New Topic</button>
         </div>
-        <div class="search-panel">
-          <input id="search-input" type="search" placeholder="Search topics" />
+
+        <div class="sidebar-actions">
+          <button id="new-topic-button" class="primary-button">New Topic</button>
           <button id="reindex-button" class="ghost-button">Reindex</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Topics</span>
+            <strong id="topic-count" class="stat-value">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Top Layer</span>
+            <strong id="active-layer-stat" class="stat-value">L1</strong>
+          </div>
+          <div class="stat-card stat-card-wide">
+            <span class="stat-label">Runtime</span>
+            <strong id="runtime-badge" class="stat-value">Web</strong>
+          </div>
+        </div>
+
+        <div class="control-panel">
+          <div class="search-panel">
+            <input id="search-input" type="search" placeholder="Search topics, summaries, sections" />
+          </div>
+          <div class="filter-panel">
+            <label>
+              Layers
+              <select id="layer-filter" multiple>
+                <option value="1">L1</option>
+                <option value="2">L2</option>
+                <option value="3">L3</option>
+                <option value="4">L4</option>
+              </select>
+            </label>
+            <label>
+              Source
+              <select id="source-filter" multiple>
+                <option value="manual">manual</option>
+                <option value="web">web</option>
+              </select>
+            </label>
+            <label>
+              Tags
+              <input id="tag-filter-input" type="text" placeholder="auth, design, docs" />
+            </label>
+          </div>
+        </div>
+
+        <div class="sidebar-section-heading">
+          <p class="eyebrow">Indexed Topics</p>
+          <span id="topic-list-caption" class="section-note">Latest first</span>
         </div>
         <div id="topic-list" class="topic-list"></div>
       </aside>
 
       <main class="main-panel">
+        <section class="masthead-card">
+          <div class="masthead-copy">
+            <p class="eyebrow">Editorial Memory System</p>
+            <h2>See active knowledge, not just stored files.</h2>
+            <p>
+              Topics, links, context bundles, and web imports share one visual surface.
+              The layout keeps the graph spatial and the editor text-first.
+            </p>
+          </div>
+          <div class="masthead-rail">
+            <div class="masthead-chip">Markdown-first</div>
+            <div class="masthead-chip">SQLite indexed</div>
+            <div class="masthead-chip">Web import ready</div>
+          </div>
+        </section>
+
         <section class="graph-card">
           <div class="section-header">
             <div>
               <p class="eyebrow">Graph</p>
               <h2>Topic Relations</h2>
             </div>
+            <p class="section-note">Layers read left to right: L1 to L4</p>
           </div>
           <svg id="graph-canvas" viewBox="0 0 960 420" aria-label="Topic graph"></svg>
         </section>
@@ -40,7 +109,10 @@
               <p class="eyebrow">Editor</p>
               <h2 id="editor-title">Untitled Topic</h2>
             </div>
-            <button id="save-button" class="primary-button">Save Topic</button>
+            <div class="button-row">
+              <button id="delete-button" class="ghost-button">Delete</button>
+              <button id="save-button" class="primary-button">Save Topic</button>
+            </div>
           </div>
           <div class="editor-layout">
             <form id="topic-form" class="editor-form">
@@ -65,22 +137,36 @@
                 Pinned
               </label>
               <label>
+                Manual Layer
+                <select id="manual-layer-input" name="manual_layer">
+                  <option value="">Auto</option>
+                  <option value="1">L1</option>
+                  <option value="2">L2</option>
+                  <option value="3">L3</option>
+                  <option value="4">L4</option>
+                </select>
+              </label>
+              <label>
                 Body
                 <textarea id="body-input" name="body" rows="18"></textarea>
               </label>
             </form>
 
             <aside class="metadata-panel">
-              <div>
+              <div class="meta-block">
                 <p class="eyebrow">Metadata</p>
                 <h3>Topic Details</h3>
               </div>
               <dl id="metadata-list" class="metadata-list"></dl>
-              <div>
+              <div class="meta-block">
                 <p class="eyebrow">Backlinks</p>
                 <ul id="backlinks-list" class="backlinks-list"></ul>
               </div>
-              <div>
+              <div class="meta-block">
+                <p class="eyebrow">Missing Links</p>
+                <ul id="missing-links-list" class="backlinks-list"></ul>
+              </div>
+              <div class="meta-block">
                 <p class="eyebrow">Context Bundle</p>
                 <pre id="context-panel" class="context-panel"></pre>
               </div>
@@ -94,9 +180,14 @@
               <p class="eyebrow">Ingestion</p>
               <h2>Web Import</h2>
             </div>
+            <p class="section-note">Preview normalized content before writing a topic</p>
           </div>
           <div class="import-grid">
             <input id="import-url-input" type="url" placeholder="https://example.com/article" />
+            <select id="import-mode-select">
+              <option value="update-if-exists">update-if-exists</option>
+              <option value="create">create</option>
+            </select>
             <button id="preview-import-button" class="ghost-button">Preview</button>
             <button id="run-import-button" class="primary-button">Import</button>
           </div>

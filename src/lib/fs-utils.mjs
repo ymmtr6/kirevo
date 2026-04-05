@@ -1,8 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {
-  EVENTS_PATH,
-  INDEX_PATH,
   INGEST_NORMALIZED_DIR,
   INGEST_RAW_DIR,
   KIREVO_DIR,
@@ -19,14 +17,6 @@ export async function ensureAppDirs() {
   await fs.mkdir(LOGS_DIR, { recursive: true });
   await fs.mkdir(INGEST_RAW_DIR, { recursive: true });
   await fs.mkdir(INGEST_NORMALIZED_DIR, { recursive: true });
-  await ensureJsonFile(INDEX_PATH, {
-    generated_at: null,
-    topics: [],
-    links: [],
-    sections: [],
-    fetches: []
-  });
-  await ensureJsonFile(EVENTS_PATH, []);
   await ensureJsonFile(SETTINGS_PATH, { port: 4312 });
 }
 
