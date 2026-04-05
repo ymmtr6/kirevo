@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+
+data/memory/.kirevo/index.json
+data/memory/.kirevo/events.json
+data/memory/.kirevo/settings.json
+data/memory/.kirevo/logs/
+data/memory/.kirevo/ingest/

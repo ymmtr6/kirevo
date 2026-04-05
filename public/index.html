@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kirevo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div>
+            <p class="eyebrow">Kirevo</p>
+            <h1>Memory Workspace</h1>
+          </div>
+          <button id="new-topic-button" class="primary-button">New Topic</button>
+        </div>
+        <div class="search-panel">
+          <input id="search-input" type="search" placeholder="Search topics" />
+          <button id="reindex-button" class="ghost-button">Reindex</button>
+        </div>
+        <div id="topic-list" class="topic-list"></div>
+      </aside>
+
+      <main class="main-panel">
+        <section class="graph-card">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Graph</p>
+              <h2>Topic Relations</h2>
+            </div>
+          </div>
+          <svg id="graph-canvas" viewBox="0 0 960 420" aria-label="Topic graph"></svg>
+        </section>
+
+        <section class="editor-card">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Editor</p>
+              <h2 id="editor-title">Untitled Topic</h2>
+            </div>
+            <button id="save-button" class="primary-button">Save Topic</button>
+          </div>
+          <div class="editor-layout">
+            <form id="topic-form" class="editor-form">
+              <label>
+                Title
+                <input id="title-input" name="title" type="text" />
+              </label>
+              <label>
+                Slug
+                <input id="slug-input" name="slug" type="text" />
+              </label>
+              <label>
+                Summary
+                <textarea id="summary-input" name="summary" rows="2"></textarea>
+              </label>
+              <label>
+                Tags
+                <input id="tags-input" name="tags" type="text" placeholder="tag1, tag2" />
+              </label>
+              <label class="checkbox-row">
+                <input id="pinned-input" name="pinned" type="checkbox" />
+                Pinned
+              </label>
+              <label>
+                Body
+                <textarea id="body-input" name="body" rows="18"></textarea>
+              </label>
+            </form>
+
+            <aside class="metadata-panel">
+              <div>
+                <p class="eyebrow">Metadata</p>
+                <h3>Topic Details</h3>
+              </div>
+              <dl id="metadata-list" class="metadata-list"></dl>
+              <div>
+                <p class="eyebrow">Backlinks</p>
+                <ul id="backlinks-list" class="backlinks-list"></ul>
+              </div>
+              <div>
+                <p class="eyebrow">Context Bundle</p>
+                <pre id="context-panel" class="context-panel"></pre>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="import-card">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Ingestion</p>
+              <h2>Web Import</h2>
+            </div>
+          </div>
+          <div class="import-grid">
+            <input id="import-url-input" type="url" placeholder="https://example.com/article" />
+            <button id="preview-import-button" class="ghost-button">Preview</button>
+            <button id="run-import-button" class="primary-button">Import</button>
+          </div>
+          <pre id="import-preview" class="import-preview"></pre>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+  </html>
