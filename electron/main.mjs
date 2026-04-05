@@ -1,7 +1,6 @@
 import { app, BrowserWindow, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { startAppServer } from "../src/app-server.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -10,6 +9,7 @@ let localServer = null;
 
 async function createWindow() {
   if (!localServer) {
+    const { startAppServer } = await import("../src/app-server.mjs");
     localServer = await startAppServer({ port: 0, host: "127.0.0.1", quiet: true });
   }
 

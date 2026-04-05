@@ -1,7 +1,14 @@
 const state = {
   topics: [],
   selectedTopicId: null,
-  graph: { nodes: [], edges: [] }
+  graph: { nodes: [], edges: [] },
+  panels: {
+    focus: true,
+    sidebar: false,
+    masthead: false,
+    editor: false,
+    import: false
+  }
 };
 
 const elements = {
@@ -29,11 +36,22 @@ const elements = {
   topicCount: document.querySelector("#topic-count"),
   activeLayerStat: document.querySelector("#active-layer-stat"),
   runtimeBadge: document.querySelector("#runtime-badge"),
-  topicListCaption: document.querySelector("#topic-list-caption")
+  topicListCaption: document.querySelector("#topic-list-caption"),
+  body: document.body,
+  sidebarPanel: document.querySelector("#sidebar-panel"),
+  mastheadPanel: document.querySelector("#masthead-panel"),
+  editorPanel: document.querySelector("#editor-panel"),
+  importPanel: document.querySelector("#import-panel"),
+  toggleFocusButton: document.querySelector("#toggle-focus-button"),
+  toggleSidebarButton: document.querySelector("#toggle-sidebar-button"),
+  toggleMastheadButton: document.querySelector("#toggle-masthead-button"),
+  toggleEditorButton: document.querySelector("#toggle-editor-button"),
+  toggleImportButton: document.querySelector("#toggle-import-button")
 };
 
 document.querySelector("#new-topic-button").addEventListener("click", () => {
   state.selectedTopicId = null;
+  openPanel("editor");
   loadEditor({
     frontmatter: {
       id: "",
@@ -56,6 +74,11 @@ document.querySelector("#reindex-button").addEventListener("click", async () => 
 });
 document.querySelector("#preview-import-button").addEventListener("click", previewImport);
 document.querySelector("#run-import-button").addEventListener("click", runImport);
+elements.toggleFocusButton.addEventListener("click", toggleFocusMode);
+elements.toggleSidebarButton.addEventListener("click", () => togglePanel("sidebar"));
+elements.toggleMastheadButton.addEventListener("click", () => togglePanel("masthead"));
+elements.toggleEditorButton.addEventListener("click", () => togglePanel("editor"));
+elements.toggleImportButton.addEventListener("click", () => togglePanel("import"));
 
 for (const element of [
   elements.searchInput,
@@ -73,6 +96,7 @@ elements.titleInput.addEventListener("input", () => {
 
 await refresh();
 syncRuntimeBadge();
+renderPanelState();
 
 async function refresh() {
   const queryString = buildFilterQuery();
@@ -93,7 +117,10 @@ async function refresh() {
   }
 
   if (state.topics[0]) {
-    await selectTopic(state.topics[0].id);
+    loadEditor({
+      frontmatter: { title: "Select a Topic from the Graph", tags: [], pinned: false, manual_layer: "" },
+      body: ""
+    });
   } else {
     state.selectedTopicId = null;
     loadEditor({
@@ -114,6 +141,7 @@ function renderSummaryStats() {
 
 async function selectTopic(topicId) {
   state.selectedTopicId = topicId;
+  openPanel("editor");
   renderTopicList();
   const topic = await fetchJson(`/api/topics/${encodeURIComponent(topicId)}`);
   loadEditor(topic);
@@ -242,7 +270,7 @@ function renderGraph() {
       `M ${startX} ${startY} C ${controlX} ${startY}, ${controlX} ${endY}, ${endX} ${endY}`
     );
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", isConnected ? "rgba(181, 84, 54, 0.42)" : "rgba(88, 67, 44, 0.16)");
+    path.setAttribute("stroke", isConnected ? "rgba(45, 111, 189, 0.42)" : "rgba(66, 98, 138, 0.16)");
     path.setAttribute("stroke-width", isConnected ? "2.4" : "1.6");
     path.setAttribute("stroke-linecap", "round");
     svg.append(path);
@@ -251,7 +279,7 @@ function renderGraph() {
     marker.setAttribute("cx", endX);
     marker.setAttribute("cy", endY);
     marker.setAttribute("r", isConnected ? "3.2" : "2.4");
-    marker.setAttribute("fill", isConnected ? "rgba(181, 84, 54, 0.75)" : "rgba(88, 67, 44, 0.28)");
+    marker.setAttribute("fill", isConnected ? "rgba(45, 111, 189, 0.75)" : "rgba(66, 98, 138, 0.28)");
     svg.append(marker);
   }
 
@@ -272,7 +300,7 @@ function renderGraph() {
       glow.setAttribute("width", cardWidth + 12);
       glow.setAttribute("height", cardHeight + 12);
       glow.setAttribute("rx", "24");
-      glow.setAttribute("fill", "rgba(181, 84, 54, 0.08)");
+      glow.setAttribute("fill", "rgba(45, 111, 189, 0.1)");
       group.append(glow);
     }
 
@@ -282,7 +310,7 @@ function renderGraph() {
     shadow.setAttribute("width", cardWidth);
     shadow.setAttribute("height", cardHeight);
     shadow.setAttribute("rx", "20");
-    shadow.setAttribute("fill", "rgba(76, 48, 21, 0.08)");
+    shadow.setAttribute("fill", "rgba(29, 63, 109, 0.08)");
     group.append(shadow);
 
     const card = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -291,8 +319,8 @@ function renderGraph() {
     card.setAttribute("width", cardWidth);
     card.setAttribute("height", cardHeight);
     card.setAttribute("rx", "20");
-    card.setAttribute("fill", "rgba(255, 251, 245, 0.96)");
-    card.setAttribute("stroke", isSelected ? "rgba(181, 84, 54, 0.68)" : "rgba(101, 74, 46, 0.12)");
+    card.setAttribute("fill", "rgba(249, 252, 255, 0.96)");
+    card.setAttribute("stroke", isSelected ? "rgba(45, 111, 189, 0.68)" : "rgba(68, 96, 132, 0.14)");
     card.setAttribute("stroke-width", isSelected ? "2.2" : "1.4");
     group.append(card);
 
@@ -321,7 +349,7 @@ function renderGraph() {
     sourceText.setAttribute("text-anchor", "end");
     sourceText.setAttribute("font-size", "10");
     sourceText.setAttribute("letter-spacing", "0.08em");
-    sourceText.setAttribute("fill", node.sourceType === "web" ? "#546b86" : "#655946");
+    sourceText.setAttribute("fill", node.sourceType === "web" ? "#315f9c" : "#5f7088");
     sourceText.textContent = node.sourceType.toUpperCase();
     group.append(sourceText);
 
@@ -330,7 +358,7 @@ function renderGraph() {
     title.setAttribute("y", top + 46);
     title.setAttribute("font-size", "14");
     title.setAttribute("font-weight", "600");
-    title.setAttribute("fill", "#211910");
+    title.setAttribute("fill", "#142033");
     title.textContent = truncate(node.label, 20);
     group.append(title);
 
@@ -338,7 +366,7 @@ function renderGraph() {
     slug.setAttribute("x", left + 14);
     slug.setAttribute("y", top + 62);
     slug.setAttribute("font-size", "11");
-    slug.setAttribute("fill", "rgba(101, 89, 70, 0.86)");
+    slug.setAttribute("fill", "rgba(95, 112, 136, 0.92)");
     slug.textContent = truncate(node.slug, 24);
     group.append(slug);
 
@@ -378,6 +406,7 @@ async function deleteCurrentTopic() {
 async function previewImport() {
   const url = elements.importUrlInput.value.trim();
   if (!url) return;
+  openPanel("import");
   const preview = await fetchJson("/api/import/preview", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -389,6 +418,7 @@ async function previewImport() {
 async function runImport() {
   const url = elements.importUrlInput.value.trim();
   if (!url) return;
+  openPanel("import");
   const result = await fetchJson("/api/import", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -442,17 +472,17 @@ function escapeHtml(value) {
 }
 
 function layerColor(layer) {
-  if (layer === 1) return "#c84d31";
-  if (layer === 2) return "#df8f38";
-  if (layer === 3) return "#7d9663";
-  return "#7a7f96";
+  if (layer === 1) return "#2d6fbd";
+  if (layer === 2) return "#4f86d8";
+  if (layer === 3) return "#6ca2d7";
+  return "#8caecc";
 }
 
 function layerTint(layer) {
-  if (layer === 1) return "rgba(196, 76, 46, 0.12)";
-  if (layer === 2) return "rgba(215, 139, 42, 0.14)";
-  if (layer === 3) return "rgba(105, 131, 93, 0.14)";
-  return "rgba(120, 131, 154, 0.14)";
+  if (layer === 1) return "rgba(45, 111, 189, 0.14)";
+  if (layer === 2) return "rgba(79, 134, 216, 0.14)";
+  if (layer === 3) return "rgba(108, 162, 215, 0.16)";
+  return "rgba(140, 174, 204, 0.18)";
 }
 
 function truncate(value, length) {
@@ -483,4 +513,50 @@ function renderGraphBackdrop(svg) {
 function syncRuntimeBadge() {
   const runtime = window.kirevoDesktop?.runtime === "electron" ? "Desktop" : "Web";
   elements.runtimeBadge.textContent = runtime;
+}
+
+function toggleFocusMode() {
+  state.panels.focus = !state.panels.focus;
+  if (state.panels.focus) {
+    state.panels.sidebar = false;
+    state.panels.masthead = false;
+    state.panels.editor = false;
+    state.panels.import = false;
+  }
+  renderPanelState();
+}
+
+function togglePanel(name) {
+  state.panels[name] = !state.panels[name];
+  if (state.panels[name]) {
+    state.panels.focus = false;
+  }
+  renderPanelState();
+}
+
+function openPanel(name) {
+  state.panels[name] = true;
+  state.panels.focus = false;
+  renderPanelState();
+}
+
+function renderPanelState() {
+  elements.body.classList.toggle("graph-focus", state.panels.focus);
+  setPanelVisibility(elements.sidebarPanel, state.panels.sidebar);
+  setPanelVisibility(elements.mastheadPanel, state.panels.masthead);
+  setPanelVisibility(elements.editorPanel, state.panels.editor);
+  setPanelVisibility(elements.importPanel, state.panels.import);
+  setToggleState(elements.toggleFocusButton, state.panels.focus);
+  setToggleState(elements.toggleSidebarButton, state.panels.sidebar);
+  setToggleState(elements.toggleMastheadButton, state.panels.masthead);
+  setToggleState(elements.toggleEditorButton, state.panels.editor);
+  setToggleState(elements.toggleImportButton, state.panels.import);
+}
+
+function setPanelVisibility(element, visible) {
+  element.classList.toggle("is-collapsed", !visible);
+}
+
+function setToggleState(button, active) {
+  button.classList.toggle("is-active", active);
 }

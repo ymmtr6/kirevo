@@ -6,9 +6,9 @@
     <title>Kirevo</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
+  <body class="graph-focus">
     <div class="app-shell">
-      <aside class="sidebar">
+      <aside id="sidebar-panel" class="sidebar panel-card is-collapsed">
         <div class="sidebar-hero">
           <div class="brand-mark">K</div>
           <div>
@@ -76,7 +76,7 @@
       </aside>
 
       <main class="main-panel">
-        <section class="masthead-card">
+        <section id="masthead-panel" class="masthead-card panel-card is-collapsed">
           <div class="masthead-copy">
             <p class="eyebrow">Editorial Memory System</p>
             <h2>See active knowledge, not just stored files.</h2>
@@ -98,12 +98,18 @@
               <p class="eyebrow">Graph</p>
               <h2>Topic Relations</h2>
             </div>
-            <p class="section-note">Layers read left to right: L1 to L4</p>
+            <div class="graph-toolbar">
+              <button id="toggle-focus-button" class="ghost-button">Graph Focus</button>
+              <button id="toggle-sidebar-button" class="ghost-button">Library</button>
+              <button id="toggle-masthead-button" class="ghost-button">Overview</button>
+              <button id="toggle-editor-button" class="ghost-button">Editor</button>
+              <button id="toggle-import-button" class="ghost-button">Import</button>
+            </div>
           </div>
           <svg id="graph-canvas" viewBox="0 0 960 420" aria-label="Topic graph"></svg>
         </section>
 
-        <section class="editor-card">
+        <section id="editor-panel" class="editor-card panel-card is-collapsed">
           <div class="section-header">
             <div>
               <p class="eyebrow">Editor</p>
@@ -174,7 +180,7 @@
           </div>
         </section>
 
-        <section class="import-card">
+        <section id="import-panel" class="import-card panel-card is-collapsed">
           <div class="section-header">
             <div>
               <p class="eyebrow">Ingestion</p>
